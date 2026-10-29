@@ -38,6 +38,43 @@
     .btn.print { background: #0f766e; }
     .btn.print:hover { background: #115e59; }
     .hint { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
+    .kinds { border: 0; padding: 0; margin: 16px 0 0; }
+    .kinds legend { font-size: .9rem; font-weight: 600; margin-bottom: 8px; padding: 0; }
+    .kinds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .kinds legend { grid-column: 1 / -1; }
+    .kind { position: relative; margin: 0; cursor: pointer; }
+    .kind input { position: absolute; opacity: 0; pointer-events: none; }
+    .k-body { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; height: 100%; padding: 14px 10px; border: 2px solid var(--line); border-radius: 12px; background: #fff; transition: border-color .15s, background .15s, box-shadow .15s; }
+    .k-icon { font-size: 1.6rem; line-height: 1; }
+    .k-title { font-weight: 700; font-size: 1rem; }
+    .k-sub { font-weight: 400; font-size: .8rem; color: var(--muted); }
+    .kind:hover .k-body { border-color: #93c5fd; }
+    .kind input:checked + .k-body { border-color: var(--brand); background: #eff6ff; box-shadow: 0 0 0 3px rgba(29, 78, 216, .15); }
+    .kind input:focus-visible + .k-body { outline: 2px solid var(--brand); outline-offset: 2px; }
+    @media (max-width: 560px) { .kinds { grid-template-columns: 1fr; } .k-body { flex-direction: row; text-align: left; gap: 12px; } .k-body .k-sub { margin-left: auto; text-align: right; } }
+
+    /* conduct log page */
+    .clog { color: #000; font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; font-size: 10.5pt; border: 2px solid #000; padding: 14px; }
+    .clog table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    .clog th, .clog td { border: 1px solid #000; padding: 3px 7px; text-align: left; vertical-align: top; }
+    .clog .school { text-align: center; font-size: 13pt; font-weight: 800; margin: 0; }
+    .clog .term-line { text-align: center; font-weight: 600; margin: 2px 0 10px; }
+    .clog .head { background: #f0f0f0; font-weight: bold; width: 25%; }
+    .clog .logo-cell { border: 0; text-align: center; width: 30%; vertical-align: middle; }
+    .clog .logo-cell .lg { display: inline-flex; align-items: center; gap: 8px; }
+    .clog .logo-cell img { height: 56px; width: auto; }
+    .clog .sum td { text-align: center; width: 25%; }
+    .clog .sum b { display: block; font-size: 15pt; }
+    .clog .sum .plus b { color: #15803d; } .clog .sum .minus b { color: #b91c1c; }
+    .clog .log th { background: #dce6f1; text-align: center; }
+    .clog .log td.n { width: 6%; text-align: right; }
+    .clog .log td.d { width: 15%; white-space: nowrap; }
+    .clog .log td.p { width: 9%; text-align: center; font-weight: 700; }
+    .clog .log td.p.plus { color: #15803d; } .clog .log td.p.minus { color: #b91c1c; }
+    .clog .log td.t { width: 28%; }
+    .clog .note { font-size: .9em; color: #333; }
+    .clog .rule { text-align: center; font-size: 9pt; color: #333; margin: 4px 0 0; }
+    .clog .none { text-align: center; color: #444; padding: 10px; }
     .status { margin-top: 18px; }
     .msg { padding: 13px 15px; border-radius: 10px; font-weight: 500; }
     .msg.error { background: var(--err-bg); color: var(--err-fg); }
@@ -85,7 +122,9 @@
       .page { box-shadow: none; margin: 0; padding: 0; max-width: none; break-after: page; page-break-after: always; }
       .page:last-child { break-after: auto; page-break-after: auto; }
       .divider { min-height: 260mm; }
-      .report .marks th, .report .marks td.n, .report .head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .report .marks th, .report .marks td.n, .report .head, .clog th, .clog .head, .clog .sum b, .clog .log td.p { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .clog .log thead { display: table-header-group; }
+      .clog .log tr { break-inside: avoid; page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -94,7 +133,7 @@
     <div class="hero">
       <span class="logos"><img src="https://res.cloudinary.com/dmukvplh6/image/upload/v1760945089/MSB_Logo_roc2tc.png" alt="MSB logo"><img src="https://res.cloudinary.com/dmukvplh6/image/upload/v1765528689/BHS_LOGO_crop_atlgni.jpg" alt="BHS logo"></span>
       <h1>Result Printing</h1>
-      <p><span id="termName">First Test</span> <span id="yearLabel"></span> &middot; for class teachers and HOS</p>
+      <p><span id="termName">First Test</span> <span id="yearLabel"></span> &middot; report cards &amp; conduct logs &middot; for class teachers and HOS</p>
     </div>
 
     <div class="panel">
@@ -102,13 +141,24 @@
         <label for="pin">Staff PIN</label>
         <input id="pin" type="password" inputmode="numeric" placeholder="Enter the staff PIN" required>
 
+        <fieldset class="kinds">
+          <legend>What do you want to print?</legend>
+          <label class="kind"><input type="radio" name="kind" value="report" checked>
+            <span class="k-body"><span class="k-icon">📄</span><span class="k-title">Report cards</span><span class="k-sub">Marks &amp; grades, one page per student</span></span></label>
+          <label class="kind"><input type="radio" name="kind" value="conduct">
+            <span class="k-body"><span class="k-icon">⭐</span><span class="k-title">Conduct logs</span><span class="k-sub">Every Hasanaat &amp; Tanbeeh, one page per student</span></span></label>
+          <label class="kind"><input type="radio" name="kind" value="both">
+            <span class="k-body"><span class="k-icon">📚</span><span class="k-title">Both</span><span class="k-sub">Each student's report card, then their conduct log</span></span></label>
+        </fieldset>
+
         <label for="classSelect">Class</label>
         <select id="classSelect" required>
           <option value="" disabled selected>Loading classes…</option>
         </select>
-        <p class="hint">Choose one class, or <b>Print all results</b> for the whole school. Every student gets one page, and each class starts with its own cover page.</p>
+        <p class="hint">Choose one class, or <b>Print all results</b> for the whole school. Each class starts with its own cover page.</p>
 
         <button id="goBtn" class="btn" type="submit">Prepare PDF</button>
+        <p class="hint" id="summary"></p>
       </form>
       <div id="status" class="status"></div>
       <button id="printBtn" class="btn print" type="button" style="display:none" onclick="window.print()">Print / Save as PDF</button>
@@ -220,11 +270,43 @@
         '</div>';
     }
 
-    function divider(cls, count) {
+    var KIND_LABEL = { report: 'Report Cards', conduct: 'Conduct Logs', both: 'Report Cards & Conduct Logs' };
+
+    function signed(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n); }
+
+    function conductPage(d) {
+      var st = d.student;
+      var rows = d.entries.length ? d.entries.map(function (e, i) {
+        var k = e.points >= 0 ? 'plus' : 'minus';
+        return '<tr><td class="n">' + (i + 1) + '</td><td class="d">' + esc(e.date) + '</td><td>' + esc(e.action) +
+          (e.comment ? '<div class="note">' + esc(e.comment) + '</div>' : '') + '</td><td class="t">' + esc(e.teacher) +
+          '</td><td class="p ' + k + '">' + signed(e.points) + '</td></tr>';
+      }).join('') : '<tr><td colspan="5" class="none">No Hasanaat or Tanbeeh entries yet.</td></tr>';
+      return '<div class="clog">' +
+        '<p class="school">' + esc(SCHOOL_NAME) + '</p>' +
+        '<p class="term-line">CONDUCT LOG &middot; ' + esc(String(META.termName).toUpperCase()) + ' ' + esc(META.yearLabel) + '</p>' +
+        '<table>' +
+          '<tr><td class="head">Name:</td><td>' + show(st.name) + '</td>' +
+            '<td rowspan="4" class="logo-cell"><span class="lg"><img src="' + LOGO_URL + '" alt="MSB"><img src="' + BHS_LOGO_URL + '" alt="BHS"></span></td></tr>' +
+          '<tr><td class="head">Class:</td><td>' + show(st.className) + '</td></tr>' +
+          '<tr><td class="head">ITS ID:</td><td>' + show(st.itsNumber) + '</td></tr>' +
+          '<tr><td class="head">Roll No:</td><td>' + show(st.rollNo) + '</td></tr>' +
+        '</table>' +
+        '<table class="sum"><tr>' +
+          '<td><b>' + d.baseline + '</b>Starting</td>' +
+          '<td class="plus"><b>' + signed(d.hasanaat) + '</b>Hasanaat</td>' +
+          '<td class="minus"><b>' + signed(d.tanbeeh) + '</b>Tanbeeh</td>' +
+          '<td><b>' + d.conduct + ' / ' + d.conductMax + '</b>Conduct</td></tr></table>' +
+        '<table class="log"><thead><tr><th>#</th><th>Date</th><th>Action</th><th>Teacher</th><th>Points</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<p class="rule">Conduct = ' + d.baseline + ' + Hasanaat − Tanbeeh, out of ' + d.conductMax + '. Latest entries first.</p>' +
+        '</div>';
+    }
+
+    function divider(cls, count, kind) {
       return '<section class="page divider">' +
         '<span class="logos"><img src="' + LOGO_URL + '" alt="MSB"><img src="' + BHS_LOGO_URL + '" alt="BHS"></span>' +
         '<p class="school">' + esc(SCHOOL_NAME) + '</p>' +
-        '<p class="term">' + esc(META.termName) + ' ' + esc(META.yearLabel) + ' &middot; Report Cards</p>' +
+        '<p class="term">' + esc(META.termName) + ' ' + esc(META.yearLabel) + ' &middot; ' + KIND_LABEL[kind] + '</p>' +
         '<p class="cls">Class ' + esc(cls) + '</p>' +
         '<p class="count">' + count + ' student' + (count === 1 ? '' : 's') + '</p></section>';
     }
@@ -244,7 +326,23 @@
     }
 
     // Fetch classes a few at a time; keep results in class order.
-    function fetchClasses(classes, pin) {
+    // One class's data for the chosen kind: [{report, log}] per student, in roll order.
+    function fetchClass(cls, pin, kind) {
+      var want = kind === 'both' ? ['classresults', 'classconduct'] : [kind === 'report' ? 'classresults' : 'classconduct'];
+      return Promise.all(want.map(function (a) { return api({ api: a, 'class': cls, pin: pin }); })).then(function (rs) {
+        var bad = rs.filter(function (r) { return !r.success; })[0];
+        if (bad) return bad;
+        var reports = rs[0].students || null, logs = (rs[1] || rs[0]).logs || null;
+        var byIts = {};
+        (logs || []).forEach(function (l) { byIts[l.student.itsNumber] = l; });
+        var items = reports
+          ? reports.map(function (r) { return { report: r, log: logs ? byIts[r.studentInfo.itsNumber] || null : null }; })
+          : logs.map(function (l) { return { report: null, log: l }; });
+        return { success: true, className: rs[0].className, count: items.length, items: items };
+      });
+    }
+
+    function fetchClasses(classes, pin, kind) {
       var out = new Array(classes.length);
       var next = 0, done = 0, failed = null;
       progress(0, classes.length, 'Fetching ' + (classes.length === 1 ? 'class ' + classes[0].toUpperCase() : classes.length + ' classes') + '…');
@@ -253,7 +351,7 @@
           if (failed) return Promise.resolve();
           if (next >= classes.length) return Promise.resolve();
           var i = next++;
-          return api({ api: 'classresults', 'class': classes[i], pin: pin }).then(function (res) {
+          return fetchClass(classes[i], pin, kind).then(function (res) {
             if (!res.success) { failed = res.message || 'Could not load class ' + classes[i]; return; }
             out[i] = res;
             done++;
@@ -271,21 +369,26 @@
       e.preventDefault();
       var pin = pinInput.value.trim();
       var choice = classSelect.value;
+      var kind = (form.querySelector('input[name="kind"]:checked') || {}).value || 'report';
       if (!pin) { setStatus('<div class="msg error">Please enter the staff PIN.</div>'); return; }
       if (!choice) { setStatus('<div class="msg error">Please choose a class.</div>'); return; }
       var classes = choice === ALL ? META.classList.slice() : [choice];
       goBtn.disabled = true; goBtn.textContent = 'Preparing…';
       printBtn.style.display = 'none'; previewNote.style.display = 'none';
       pagesEl.style.display = 'none'; pagesEl.innerHTML = '';
-      fetchClasses(classes, pin).then(function (results) {
+      fetchClasses(classes, pin, kind).then(function (results) {
         try { sessionStorage.setItem('staffPin', pin); } catch (err) {}
         var html = '', students = 0;
         results.forEach(function (res) {
           if (!res.count) return;
-          html += divider(res.className, res.count);
-          res.students.forEach(function (s) { html += '<section class="page">' + card(s) + '</section>'; students++; });
+          html += divider(res.className, res.count, kind);
+          res.items.forEach(function (it) {
+            if (it.report) html += '<section class="page">' + card(it.report) + '</section>';
+            if (it.log) html += '<section class="page">' + conductPage(it.log) + '</section>';
+            students++;
+          });
         });
-        if (!students) { setStatus('<div class="msg error">No report cards found for that choice.</div>'); return; }
+        if (!students) { setStatus('<div class="msg error">No students found for that choice.</div>'); return; }
         pagesEl.innerHTML = html;
         pagesEl.style.display = 'block';
         setStatus('<div class="progress-text">Preparing pages…</div>');
@@ -299,15 +402,26 @@
         previewNote.style.display = 'block';
         printBtn.style.display = 'block';
         var classCount = results.filter(function (r) { return r.count; }).length;
-        setStatus('<div class="msg ok">Ready: ' + students + ' report cards in ' + classCount + ' class' + (classCount === 1 ? '' : 'es') +
+        var what = { report: 'report cards', conduct: 'conduct logs', both: 'report cards + conduct logs' }[kind];
+        setStatus('<div class="msg ok">Ready: ' + what + ' for ' + students + ' student' + (students === 1 ? '' : 's') + ' in ' + classCount + ' class' + (classCount === 1 ? '' : 'es') +
           '. Tap <b>Print / Save as PDF</b> and choose "Save as PDF".</div>');
-        document.title = 'MSB BHS ' + META.termName + ' Results - ' + (choice === ALL ? 'Whole School' : 'Class ' + choice.toUpperCase());
+        document.title = 'MSB BHS ' + META.termName + ' ' + KIND_LABEL[kind] + ' - ' + (choice === ALL ? 'Whole School' : 'Class ' + choice.toUpperCase());
       }).catch(function (err) {
         setStatus('<div class="msg error">' + esc(err.message === 'Failed to fetch' ? 'Could not reach the results server. Check the internet connection and try again.' : err.message) + '</div>');
       }).then(function () {
         goBtn.disabled = false; goBtn.textContent = 'Prepare PDF';
       });
     });
+
+    // Live one-line summary under the button, e.g. "You'll get: Conduct logs for Class 6E".
+    function updateSummary() {
+      var kind = (form.querySelector('input[name="kind"]:checked') || {}).value;
+      var c = classSelect.value;
+      var label = { report: 'Report cards', conduct: 'Conduct logs', both: 'Report cards and conduct logs' }[kind];
+      document.getElementById('summary').innerHTML = c ? "You'll get: <b>" + label + '</b> for <b>' + (c === ALL ? 'the whole school' : 'Class ' + esc(c.toUpperCase())) + '</b>' : '';
+      printBtn.style.display = 'none'; previewNote.style.display = 'none'; pagesEl.style.display = 'none';
+    }
+    form.addEventListener('change', updateSummary);
 
     loadMeta();
   </script>
