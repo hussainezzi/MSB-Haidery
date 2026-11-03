@@ -53,6 +53,24 @@
     .kind input:focus-visible + .k-body { outline: 2px solid var(--brand); outline-offset: 2px; }
     @media (max-width: 560px) { .kinds { grid-template-columns: 1fr; } .k-body { flex-direction: row; text-align: left; gap: 12px; } .k-body .k-sub { margin-left: auto; text-align: right; } }
 
+    .who { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #e2e8f0; border-radius: 12px; padding: 5px; margin-top: 16px; }
+    .who button { border: 0; border-radius: 9px; padding: 11px 8px; font-size: 1rem; font-weight: 700; background: transparent; color: #334155; cursor: pointer; }
+    .who button.on { background: #fff; color: var(--brand-dark); box-shadow: 0 1px 4px rgba(15, 23, 42, .15); }
+    .results { margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; max-height: 320px; overflow-y: auto; }
+    .results:empty { display: none; }
+    .results button { display: flex; width: 100%; gap: 10px; align-items: center; text-align: left; border: 0; border-bottom: 1px solid #e2e8f0; background: #fff; padding: 11px 14px; font-size: 1rem; cursor: pointer; }
+    .results button:last-child { border-bottom: 0; }
+    .results button:hover, .results button:focus { background: #eff6ff; outline: none; }
+    .results .nm { flex: 1; min-width: 0; }
+    .results .nm mark { background: #fef08a; color: inherit; padding: 0; }
+    .results .cl { font-weight: 700; color: var(--brand-dark); background: #eff6ff; border-radius: 6px; padding: 2px 8px; font-size: .85rem; white-space: nowrap; }
+    .results .its { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+    .results .more { padding: 9px 14px; color: var(--muted); font-size: .85rem; }
+    .picked { display: flex; gap: 10px; align-items: center; border: 2px solid var(--brand); background: #eff6ff; border-radius: 10px; padding: 11px 14px; }
+    .picked .nm { flex: 1; font-weight: 700; color: var(--brand-dark); }
+    .picked .sub { display: block; font-weight: 400; font-size: .85rem; color: var(--muted); }
+    .linkbtn { background: none; border: 0; color: var(--brand); font-weight: 700; cursor: pointer; font-size: .95rem; padding: 4px; }
+
     /* conduct log page */
     .clog { color: #000; font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; font-size: 10.5pt; border: 2px solid #000; padding: 14px; }
     .clog table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
@@ -133,7 +151,7 @@
     <div class="hero">
       <span class="logos"><img src="https://res.cloudinary.com/dmukvplh6/image/upload/v1760945089/MSB_Logo_roc2tc.png" alt="MSB logo"><img src="https://res.cloudinary.com/dmukvplh6/image/upload/v1765528689/BHS_LOGO_crop_atlgni.jpg" alt="BHS logo"></span>
       <h1>Result Printing</h1>
-      <p><span id="termName">First Test</span> <span id="yearLabel"></span> &middot; report cards &amp; conduct logs &middot; for class teachers and HOS</p>
+      <p><span id="termName">First Test</span> <span id="yearLabel"></span> &middot; report cards &amp; Hasanaat cards &middot; for staff</p>
     </div>
 
     <div class="panel">
@@ -146,16 +164,33 @@
           <label class="kind"><input type="radio" name="kind" value="report" checked>
             <span class="k-body"><span class="k-icon">📄</span><span class="k-title">Report cards</span><span class="k-sub">Marks &amp; grades, one page per student</span></span></label>
           <label class="kind"><input type="radio" name="kind" value="conduct">
-            <span class="k-body"><span class="k-icon">⭐</span><span class="k-title">Conduct logs</span><span class="k-sub">Every Hasanaat &amp; Tanbeeh, one page per student</span></span></label>
+            <span class="k-body"><span class="k-icon">⭐</span><span class="k-title">Hasanaat cards</span><span class="k-sub">Conduct log: every Hasanaat &amp; Tanbeeh</span></span></label>
           <label class="kind"><input type="radio" name="kind" value="both">
-            <span class="k-body"><span class="k-icon">📚</span><span class="k-title">Both</span><span class="k-sub">Each student's report card, then their conduct log</span></span></label>
+            <span class="k-body"><span class="k-icon">📚</span><span class="k-title">Both</span><span class="k-sub">Report card, then the Hasanaat card</span></span></label>
         </fieldset>
 
-        <label for="classSelect">Class</label>
-        <select id="classSelect" required>
-          <option value="" disabled selected>Loading classes…</option>
-        </select>
-        <p class="hint">Choose one class, or <b>Print all results</b> for the whole school. Each class starts with its own cover page.</p>
+        <div class="who" role="tablist" aria-label="Who to print">
+          <button type="button" class="on" data-who="class" role="tab">👥 Whole class</button>
+          <button type="button" data-who="student" role="tab">👤 One student</button>
+        </div>
+
+        <div id="classBox">
+          <label for="classSelect">Class</label>
+          <select id="classSelect">
+            <option value="" disabled selected>Loading classes…</option>
+          </select>
+          <p class="hint">Choose one class, or <b>Print all results</b> for the whole school. Each class starts with its own cover page.</p>
+        </div>
+
+        <div id="studentBox" style="display:none">
+          <label for="studentSearch">Find the student</label>
+          <div id="pickedBox" class="picked" style="display:none"><span class="nm" id="pickedName"></span><button type="button" class="linkbtn" id="pickedChange">Change</button></div>
+          <div id="searchBox">
+            <input id="studentSearch" type="search" placeholder="Type a name or ITS number" autocomplete="off" spellcheck="false">
+            <div id="results" class="results"></div>
+            <p class="hint" id="dirHint">Type part of the name, e.g. <b>huzaifa</b> or <b>burhan 7</b>. Add the grade or class to narrow it down.</p>
+          </div>
+        </div>
 
         <button id="goBtn" class="btn" type="submit">Prepare PDF</button>
         <p class="hint" id="summary"></p>
@@ -270,7 +305,7 @@
         '</div>';
     }
 
-    var KIND_LABEL = { report: 'Report Cards', conduct: 'Conduct Logs', both: 'Report Cards & Conduct Logs' };
+    var KIND_LABEL = { report: 'Report Cards', conduct: 'Hasanaat Cards', both: 'Report Cards & Hasanaat Cards' };
 
     function signed(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n); }
 
@@ -284,7 +319,7 @@
       }).join('') : '<tr><td colspan="5" class="none">No Hasanaat or Tanbeeh entries yet.</td></tr>';
       return '<div class="clog">' +
         '<p class="school">' + esc(SCHOOL_NAME) + '</p>' +
-        '<p class="term-line">CONDUCT LOG &middot; ' + esc(String(META.termName).toUpperCase()) + ' ' + esc(META.yearLabel) + '</p>' +
+        '<p class="term-line">HASANAAT CARD (CONDUCT LOG) &middot; ' + esc(String(META.termName).toUpperCase()) + ' ' + esc(META.yearLabel) + '</p>' +
         '<table>' +
           '<tr><td class="head">Name:</td><td>' + show(st.name) + '</td>' +
             '<td rowspan="4" class="logo-cell"><span class="lg"><img src="' + LOGO_URL + '" alt="MSB"><img src="' + BHS_LOGO_URL + '" alt="BHS"></span></td></tr>' +
@@ -371,6 +406,7 @@
       var choice = classSelect.value;
       var kind = (form.querySelector('input[name="kind"]:checked') || {}).value || 'report';
       if (!pin) { setStatus('<div class="msg error">Please enter the staff PIN.</div>'); return; }
+      if (WHO === 'student') { printStudent(pin, kind); return; }
       if (!choice) { setStatus('<div class="msg error">Please choose a class.</div>'); return; }
       var classes = choice === ALL ? META.classList.slice() : [choice];
       goBtn.disabled = true; goBtn.textContent = 'Preparing…';
@@ -402,7 +438,7 @@
         previewNote.style.display = 'block';
         printBtn.style.display = 'block';
         var classCount = results.filter(function (r) { return r.count; }).length;
-        var what = { report: 'report cards', conduct: 'conduct logs', both: 'report cards + conduct logs' }[kind];
+        var what = { report: 'report cards', conduct: 'Hasanaat cards', both: 'report cards + Hasanaat cards' }[kind];
         setStatus('<div class="msg ok">Ready: ' + what + ' for ' + students + ' student' + (students === 1 ? '' : 's') + ' in ' + classCount + ' class' + (classCount === 1 ? '' : 'es') +
           '. Tap <b>Print / Save as PDF</b> and choose "Save as PDF".</div>');
         document.title = 'MSB BHS ' + META.termName + ' ' + KIND_LABEL[kind] + ' - ' + (choice === ALL ? 'Whole School' : 'Class ' + choice.toUpperCase());
@@ -417,11 +453,144 @@
     function updateSummary() {
       var kind = (form.querySelector('input[name="kind"]:checked') || {}).value;
       var c = classSelect.value;
-      var label = { report: 'Report cards', conduct: 'Conduct logs', both: 'Report cards and conduct logs' }[kind];
+      var label = { report: 'Report card', conduct: 'Hasanaat card', both: 'Report card and Hasanaat card' }[kind];
+      if (WHO === 'student') {
+        document.getElementById('summary').innerHTML = PICKED ? "You'll get: <b>" + label + '</b> for <b>' + esc(PICKED.name) + '</b> (' + esc(PICKED.className) + ')' : '';
+        printBtn.style.display = 'none'; previewNote.style.display = 'none'; pagesEl.style.display = 'none';
+        return;
+      }
+      label = { report: 'Report cards', conduct: 'Hasanaat cards', both: 'Report cards and Hasanaat cards' }[kind];
       document.getElementById('summary').innerHTML = c ? "You'll get: <b>" + label + '</b> for <b>' + (c === ALL ? 'the whole school' : 'Class ' + esc(c.toUpperCase())) + '</b>' : '';
       printBtn.style.display = 'none'; previewNote.style.display = 'none'; pagesEl.style.display = 'none';
     }
     form.addEventListener('change', updateSummary);
+
+    // ---------------- one student ----------------
+    var WHO = 'class', DIR = null, DIR_LOADING = null, PICKED = null;
+    var whoBtns = document.querySelectorAll('.who button');
+    var searchInput = document.getElementById('studentSearch');
+    var resultsEl = document.getElementById('results');
+    var dirHint = document.getElementById('dirHint');
+    var DIR_HINT = dirHint.innerHTML;
+
+    [].forEach.call(whoBtns, function (b) {
+      b.onclick = function () {
+        WHO = b.getAttribute('data-who');
+        [].forEach.call(whoBtns, function (x) { x.classList.toggle('on', x === b); });
+        document.getElementById('classBox').style.display = WHO === 'class' ? '' : 'none';
+        document.getElementById('studentBox').style.display = WHO === 'student' ? '' : 'none';
+        setStatus('');
+        updateSummary();
+        if (WHO === 'student') { loadDirectory(); if (!PICKED) searchInput.focus(); }
+      };
+    });
+    pinInput.addEventListener('change', function () { if (WHO === 'student' && !DIR) loadDirectory(); });
+
+    function loadDirectory() {
+      if (DIR || DIR_LOADING) return DIR_LOADING;
+      var pin = pinInput.value.trim();
+      if (!pin) { dirHint.innerHTML = 'Enter the staff PIN above first, then type the name.'; return null; }
+      dirHint.innerHTML = '<span class="progress-text">Loading the student list… (the first time can take up to a minute)</span>';
+      DIR_LOADING = api({ api: 'directory', pin: pin }).then(function (d) {
+        DIR_LOADING = null;
+        if (!d.success) { dirHint.innerHTML = '<span style="color:#b91c1c;font-weight:600">' + esc(d.message) + '</span>'; return; }
+        try { sessionStorage.setItem('staffPin', pin); } catch (err) {}
+        DIR = d.students.map(function (s) {
+          s.key = (s.name + ' ' + s.className + ' ' + s.its).toLowerCase();
+          return s;
+        });
+        dirHint.innerHTML = DIR_HINT + ' <span style="white-space:nowrap">(' + DIR.length + ' students)</span>';
+        search();
+      }, function () {
+        DIR_LOADING = null;
+        dirHint.innerHTML = '<span style="color:#b91c1c;font-weight:600">Could not load the student list. Check the internet connection and try again.</span>';
+      });
+      return DIR_LOADING;
+    }
+
+    function highlight(name, words) {
+      var out = esc(name);
+      words.forEach(function (w) {
+        if (!w || /^\d/.test(w)) return;
+        out = out.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>');
+      });
+      return out;
+    }
+
+    function search() {
+      if (!DIR) { if (searchInput.value.trim()) loadDirectory(); return; }
+      var q = searchInput.value.trim().toLowerCase();
+      if (q.length < 2) { resultsEl.innerHTML = ''; return; }
+      var words = q.split(/\s+/);
+      var hits = DIR.filter(function (s) {
+        return words.every(function (w) {
+          if (/^\d{1,2}[a-z]?$/.test(w)) return s.className.toLowerCase().indexOf(w) === 0; // "7" or "7e" = class
+          return s.key.indexOf(w) >= 0;
+        });
+      });
+      hits.sort(function (a, b) {
+        var as = (' ' + a.name.toLowerCase()).indexOf(' ' + words[0]) >= 0 ? 0 : 1;
+        var bs = (' ' + b.name.toLowerCase()).indexOf(' ' + words[0]) >= 0 ? 0 : 1;
+        return as - bs || a.name.localeCompare(b.name);
+      });
+      var shown = hits.slice(0, 40);
+      resultsEl.innerHTML = shown.length ? shown.map(function (s) {
+        return '<button type="button" data-its="' + esc(s.its) + '"><span class="nm">' + highlight(s.name, words) + '</span>' +
+          '<span class="its">' + esc(s.its) + '</span><span class="cl">' + esc(s.className) + '</span></button>';
+      }).join('') + (hits.length > shown.length ? '<div class="more">' + (hits.length - shown.length) + ' more — type more of the name, or add the class (e.g. 7E)</div>' : '')
+        : '<div class="more">No student matches "' + esc(q) + '".</div>';
+      [].forEach.call(resultsEl.querySelectorAll('[data-its]'), function (b) {
+        b.onclick = function () { pick(DIR.filter(function (s) { return s.its === b.getAttribute('data-its'); })[0]); };
+      });
+    }
+    searchInput.addEventListener('input', search);
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); var first = resultsEl.querySelector('[data-its]'); if (first) first.click(); }
+    });
+
+    function pick(s) {
+      PICKED = s;
+      document.getElementById('pickedName').innerHTML = esc(s.name) + '<span class="sub">Class ' + esc(s.className) + (s.rollNo !== '' ? ' &middot; Roll ' + esc(s.rollNo) : '') + ' &middot; ITS ' + esc(s.its) + '</span>';
+      document.getElementById('pickedBox').style.display = 'flex';
+      document.getElementById('searchBox').style.display = 'none';
+      setStatus('');
+      updateSummary();
+    }
+    document.getElementById('pickedChange').onclick = function () {
+      PICKED = null;
+      document.getElementById('pickedBox').style.display = 'none';
+      document.getElementById('searchBox').style.display = '';
+      searchInput.select(); searchInput.focus(); search(); updateSummary();
+    };
+
+    function printStudent(pin, kind) {
+      if (!PICKED) { setStatus('<div class="msg error">Please search and choose a student first.</div>'); return; }
+      var s = PICKED, cls = s.className.toLowerCase();
+      var want = kind === 'both' ? ['results', 'conductlog'] : [kind === 'report' ? 'results' : 'conductlog'];
+      goBtn.disabled = true; goBtn.textContent = 'Preparing…';
+      printBtn.style.display = 'none'; previewNote.style.display = 'none';
+      pagesEl.style.display = 'none'; pagesEl.innerHTML = '';
+      setStatus('<div class="progress-text">Fetching ' + esc(s.name) + '…</div>');
+      Promise.all(want.map(function (a) { return api({ api: a, 'class': cls, its: s.its }); })).then(function (rs) {
+        var bad = rs.filter(function (r) { return !r.success; })[0];
+        if (bad) throw new Error(bad.message || 'Could not load this student.');
+        var html = '';
+        want.forEach(function (a, i) {
+          html += '<section class="page">' + (a === 'results' ? card(rs[i]) : conductPage(rs[i])) + '</section>';
+        });
+        pagesEl.innerHTML = html; pagesEl.style.display = 'block';
+        return Promise.all([].map.call(pagesEl.querySelectorAll('img'), function (img) {
+          return img.complete ? null : new Promise(function (ok) { img.onload = img.onerror = ok; });
+        }));
+      }).then(function () {
+        previewNote.style.display = 'block'; printBtn.style.display = 'block';
+        var what = { report: 'Report card', conduct: 'Hasanaat card', both: 'Report card + Hasanaat card' }[kind];
+        setStatus('<div class="msg ok">Ready: ' + what + ' for ' + esc(s.name) + ' (' + esc(s.className) + '). Tap <b>Print / Save as PDF</b>.</div>');
+        document.title = s.name + ' - ' + s.className + ' - ' + KIND_LABEL[kind].replace('Cards', 'Card');
+      }).catch(function (err) {
+        setStatus('<div class="msg error">' + esc(err.message === 'Failed to fetch' ? 'Could not reach the results server. Check the internet connection and try again.' : err.message) + '</div>');
+      }).then(function () { goBtn.disabled = false; goBtn.textContent = 'Prepare PDF'; });
+    }
 
     loadMeta();
   </script>
