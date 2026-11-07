@@ -333,7 +333,7 @@
         $('whoLine').textContent = S.user.name + ' · ' + (S.user.role === 'Teacher' ? 'Staff' : S.user.role);
         var staff = S.user.role !== 'Teacher';
         $('dashNav').classList.toggle('hidden', !staff);
-        $('dashNavLabel').textContent = S.user.role === 'Admin' ? 'Work list' : 'Approvals';
+        $('dashNavLabel').textContent = S.user.role === 'Admin' ? 'Work list' : 'Dashboard';
         $('dashTitle').textContent = S.user.role === 'Admin' ? 'Work list' : (S.user.role === 'Principal' ? 'Principal dashboard' : 'HOS dashboard');
         $('appView').classList.remove('hidden');
         renderForm();
@@ -552,7 +552,7 @@
       var all = S.requests.slice();
       var pend = pendingMine();
       $('approvalBox').innerHTML = (!admin && pend.length) ? '<div class="section-title">Needs your approval <span class="count">' + pend.length + '</span></div>' +
-        pend.map(function (r) { return card(r, { staff: true, approve: true }); }).join('') : (!admin ? '<div class="msg ok">Nothing is waiting for your approval. 👍</div>' : '');
+        pend.map(function (r) { return card(r, { staff: true, approve: true }); }).join('') : (S.user.role === 'Principal' ? '<div class="msg ok">Nothing is waiting for your approval. 👍</div>' : '');
       bindCards($('approvalBox'));
 
       var weekAgo = Date.now() - 7 * 86400000;
